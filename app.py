@@ -61,6 +61,14 @@ def assign_time(message):
     emit('timer_syn',{'room':message['room']},room=message['room'])
     join_room(message['room'])
 
+
+@socketio.on('stop_all_timer',namespace="/test")
+def stop_timer(message):
+    if message['status']==1:
+        emit('stop_or_not',{'sign':'stop'},room=message['room'])
+    else:
+        emit('stop_or_not',{'sign':'not','distance':message['distance']},room=message['room'])
+
 @socketio.on('gettime',namespace='/test')
 def joingroup(message):
     emit('start_timer',{'currenttime':message['currenttime']},room=message['room'])

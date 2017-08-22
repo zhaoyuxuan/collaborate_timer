@@ -106,6 +106,14 @@
                 });
 
             });
+            socket.on('stop_or_not',function(msg){
+              if(msg.sign==='stop'){
+                clearInterval(x);
+              }
+              else{
+                countdown(msg.distance);
+              }
+            });
             socket.on('start_timer', function(msg) {
                 clearInterval(x);
                 console.log("final" + msg.currenttime);
@@ -172,12 +180,15 @@
                 if (twice) {
                     document.getElementById('pausebutton').value = "pause";
                     countdown(distance);
+                    twice=false;
+                    socket.emit('stop_all_timer',{status:0,room:$('#join_room').val(),distance:distance});
 
                 } else {
                     distance = getCurrentTime();
                     clearInterval(x);
                     document.getElementById('pausebutton').value = "resume";
                     twice = true;
+                    socket.emit('stop_all_timer',{status:1,room:$('#join_room').val()});
                 }
             });
         });
