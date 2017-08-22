@@ -46,20 +46,24 @@ def test_broadcast_message(message):
          {'data': message['data'], 'count': session['receive_count']},
          broadcast=True)
 
-
 @socketio.on('join', namespace='/test')
 def join(message):
+    print("it is joined")
     join_room(message['room'])
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('my_response',
          {'data': 'In rooms: ' + ', '.join(rooms()),
           'count': session['receive_count']})
+    print("sent to the front")
 
-@socketio.on('sys_string', namespace='/test')
-def syn(message):
+@socketio.on('room_and_time', namespace='/test')
+def assign_time(message):
+    emit('timer_syn',{'room':message['room']},room=message['room'])
     join_room(message['room'])
 
-    emit('timer_syn',{'string':message['data']})
+@socketio.on('gettime',namespace='/test')
+def joingroup(message):
+    emit('start_timer',{'currenttime':message['currenttime']},room=message['room'])
 
 
 @socketio.on('leave', namespace='/test')

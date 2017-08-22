@@ -1,10 +1,47 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
     <title>Flask-SocketIO Test</title>
     <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
+        var distance,x;
+        function countdown(millisec) {
+            var countDownDate = new Date().getTime() + millisec;
+
+            // Update the count down every 1 second
+             x = setInterval(function() {
+
+                // Get todays date and time
+                var now = new Date().getTime();
+
+                // Find the distance between now an the count down date
+                distance = countDownDate - now;
+
+                // Time calculations for days, hours, minutes and seconds
+                var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Output the result in an element with id="demo"
+                document.getElementById("CountDownTimer").innerHTML = days + "d " + hours + "h " +
+                    minutes + "m " + seconds + "s ";
+
+                // If the count down is over, write some text
+                if (distance < 0) {
+                    clearInterval(x);
+                    document.getElementById("CountDownTimer").innerHTML = "EXPIRED";
+                }
+            }, 1000);
+        }
+
+        function getCurrentTime(){
+          return distance;
+        }
+
+        countdown(20*60000);
         $(document).ready(function() {
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
@@ -21,11 +58,12 @@
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
             // server is established.
-            socket.on('timer_syn',function(msg){
-              alert(msg.string);
-            });
+
+
             socket.on('connect', function() {
-                socket.emit('my_event', {data: 'I\'m connected!'});
+                socket.emit('my_event', {
+                    data: 'I\'m connected!'
+                });
             });
 
             // Event handler for server sent data.
@@ -58,55 +96,86 @@
                     sum += ping_pong_times[i];
                 $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
             });
+            socket.on('timer_syn', function(msg) {
+                var current= getCurrentTime();
+                console.log(current);
+                socket.emit('gettime',{room:msg.room, currenttime:current});
+
+            });
+            socket.on('start_timer',function(msg){
+              clearInterval(x);
+              console.log("final"+msg.currenttime);
+              countdown(msg.currenttime);
+
+            });
 
             // Handlers for the different forms in the page.
             // These accept data from the user and send it to the server in a
             // variety of ways
             $('form#emit').submit(function(event) {
-                socket.emit('my_event', {data: $('#emit_data').val()});
+                socket.emit('my_event', {
+                    data: $('#emit_data').val()
+                });
                 return false;
             });
             $('form#broadcast').submit(function(event) {
-                socket.emit('my_broadcast_event', {data: $('#broadcast_data').val()});
+                socket.emit('my_broadcast_event', {
+                    data: $('#broadcast_data').val()
+                });
                 return false;
             });
             $('form#join').submit(function(event) {
-                socket.emit('join', {room: $('#join_room').val()});
+                /*socket.emit('join', {
+                    room: $('#join_room').val()
+                });*/
                 return false;
             });
             $('form#leave').submit(function(event) {
-                socket.emit('leave', {room: $('#leave_room').val()});
+                socket.emit('leave', {
+                    room: $('#leave_room').val()
+                });
                 return false;
             });
             $('form#send_room').submit(function(event) {
-                socket.emit('my_room_event', {room: $('#room_name').val(), data: $('#room_data').val()});
+                socket.emit('my_room_event', {
+                    room: $('#room_name').val(),
+                    data: $('#room_data').val()
+                });
                 return false;
             });
             $('form#close').submit(function(event) {
-                socket.emit('close_room', {room: $('#close_room').val()});
+                socket.emit('close_room', {
+                    room: $('#close_room').val()
+                });
                 return false;
             });
             $('form#disconnect').submit(function(event) {
                 socket.emit('disconnect_request');
                 return false;
             });
-            $('form#timer').submit(function(){
-              socket.emit('sys_string',{room:$('#room_name').val(), data:$('#timer').val()});
-              return false;
+
+            $('form#join').submit(function() {
+                socket.emit('room_and_time', {
+                    room: $('#join_room').val()
+                });
+
+                return false;
 
             });
         });
     </script>
 </head>
+
 <body>
+    <p id="CountDownTimer"></p>
     <h1>Flask-SocketIO Test</h1>
     <p>Async mode is: <b>{{ async_mode }}</b></p>
 
     <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
     <h2>Send:</h2>
-    <form id="timer">
-        <input type="text" id="timer" placeholder="string">
-        <input type="submit" value="Echo">
+    <form id="timer" method="POST">
+        <input type="text" id="cow" placeholder="string">
+        <input type="submit" value="string">
     </form>
     <form id="emit" method="POST" action='#'>
         <input type="text" name="emit_data" id="emit_data" placeholder="Message">
@@ -139,4 +208,5 @@
     <h2>Receive:</h2>
     <div id="log"></div>
 </body>
+
 </html>
