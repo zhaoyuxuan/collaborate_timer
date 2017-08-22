@@ -6,12 +6,13 @@
     <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
-        var distance,x;
+        var distance, x;
+
         function countdown(millisec) {
             var countDownDate = new Date().getTime() + millisec;
 
             // Update the count down every 1 second
-             x = setInterval(function() {
+            x = setInterval(function() {
 
                 // Get todays date and time
                 var now = new Date().getTime();
@@ -37,11 +38,11 @@
             }, 1000);
         }
 
-        function getCurrentTime(){
-          return distance;
+        function getCurrentTime() {
+            return distance;
         }
 
-        countdown(20*60000);
+        countdown(20 * 60000);
         $(document).ready(function() {
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
@@ -97,15 +98,18 @@
                 $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
             });
             socket.on('timer_syn', function(msg) {
-                var current= getCurrentTime();
+                var current = getCurrentTime();
                 console.log(current);
-                socket.emit('gettime',{room:msg.room, currenttime:current});
+                socket.emit('gettime', {
+                    room: msg.room,
+                    currenttime: current
+                });
 
             });
-            socket.on('start_timer',function(msg){
-              clearInterval(x);
-              console.log("final"+msg.currenttime);
-              countdown(msg.currenttime);
+            socket.on('start_timer', function(msg) {
+                clearInterval(x);
+                console.log("final" + msg.currenttime);
+                countdown(msg.currenttime);
 
             });
 
@@ -162,6 +166,20 @@
                 return false;
 
             });
+            var twice = false;
+            $('#pausebutton').click(function() {
+                console.log(twice);
+                if (twice) {
+                    document.getElementById('pausebutton').value = "pause";
+                    countdown(distance);
+
+                } else {
+                    distance = getCurrentTime();
+                    clearInterval(x);
+                    document.getElementById('pausebutton').value = "resume";
+                    twice = true;
+                }
+            });
         });
     </script>
 </head>
@@ -170,7 +188,7 @@
     <p id="CountDownTimer"></p>
     <h1>Flask-SocketIO Test</h1>
     <p>Async mode is: <b>{{ async_mode }}</b></p>
-
+    <input type="submit" value="pause" id="pausebutton">
     <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
     <h2>Send:</h2>
     <form id="timer" method="POST">
