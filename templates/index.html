@@ -38,6 +38,8 @@
             }, 1000);
         }
 
+
+
         function getCurrentTime() {
             return distance;
         }
@@ -60,7 +62,7 @@
             // The callback function is invoked when a connection with the
             // server is established.
 
-
+            socket.emit("create_new")
             socket.on('connect', function() {
                 socket.emit('my_event', {
                     data: 'I\'m connected!'
@@ -99,7 +101,7 @@
             });
             socket.on('timer_syn', function(msg) {
                 var current = getCurrentTime();
-                console.log(current);
+                console.log('current'+current);
                 socket.emit('gettime', {
                     room: msg.room,
                     currenttime: current
@@ -174,6 +176,7 @@
                 return false;
 
             });
+
             var twice = false;
             $('#pausebutton').click(function() {
                 console.log(twice);

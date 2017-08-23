@@ -3,12 +3,15 @@ from threading import Lock
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+from  storedb import Room
+
+
+
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
 async_mode = None
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode=async_mode)
@@ -30,6 +33,26 @@ def background_thread():
 @app.route('/')
 def index():
     return render_template('index.html', async_mode=socketio.async_mode)
+
+
+@app.route('/<roomnumber>')
+def rommnum(roomnumber):
+    # socketio.join_room(roomnumber)
+    # socketio.emit('timer_syn',{"room":roomnumber})
+    #socketio.join_room(roomnumber)
+    # print("ahha")
+    #
+    session['room']=roomnumber
+    return render_template('index.html', async_mode=socketio.async_mode)
+
+
+@socketio.on("create_new",namespace="/test")
+def new():
+    if 'room' in session:
+        emit('timer_syn',{'room':session['room']},room=session['room'])
+        join_room(session['room'])
+        session.pop('room',None)
+
 
 
 @socketio.on('my_event', namespace='/test')
@@ -58,6 +81,7 @@ def join(message):
 
 @socketio.on('room_and_time', namespace='/test')
 def assign_time(message):
+    print("it is here")
     emit('timer_syn',{'room':message['room']},room=message['room'])
     join_room(message['room'])
 
