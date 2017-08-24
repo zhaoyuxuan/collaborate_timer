@@ -19,15 +19,15 @@ thread = None
 thread_lock = Lock()
 
 
-def background_thread():
-    """Example of how to send server generated events to clients."""
-    count = 0
-    while True:
-        socketio.sleep(10)
-        count += 1
-        socketio.emit('my_response',
-                      {'data': 'Server generated event', 'count': count},
-                      namespace='/test')
+# def background_thread():
+#     """Example of how to send server generated events to clients."""
+#     count = 0
+#     while True:
+#         socketio.sleep(10)
+#         count += 1
+#         socketio.emit('my_response',
+#                       {'data': 'Server generated event', 'count': count},
+#                       namespace='/test')
 
 
 @app.route('/')
@@ -50,6 +50,7 @@ def rommnum(roomnumber):
 def new():
     if 'room' in session:
         emit('timer_syn',{'room':session['room']},room=session['room'])
+
         join_room(session['room'])
         session.pop('room',None)
 
@@ -71,31 +72,23 @@ def test_broadcast_message(message):
 
 @socketio.on('join', namespace='/test')
 def join(message):
-    print("it is joined")
     join_room(message['room'])
     session['receive_count'] = session.get('receive_count', 0) + 1
     emit('my_response',
          {'data': 'In rooms: ' + ', '.join(rooms()),
           'count': session['receive_count']})
-    print("sent to the front")
 
 @socketio.on('room_and_time', namespace='/test')
 def assign_time(message):
-    print("it is here")
+    print("room and time")
     emit('timer_syn',{'room':message['room']},room=message['room'])
     join_room(message['room'])
 
 
-@socketio.on('stop_all_timer',namespace="/test")
-def stop_timer(message):
-    if message['status']==1:
-        emit('stop_or_not',{'sign':'stop'},room=message['room'])
-    else:
-        emit('stop_or_not',{'sign':'not','distance':message['distance']},room=message['room'])
-
 @socketio.on('gettime',namespace='/test')
 def joingroup(message):
-    emit('start_timer',{'currenttime':message['currenttime']},room=message['room'])
+    emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"]},room=message['room'])
+    print(message["pause"])
 
 
 @socketio.on('leave', namespace='/test')
@@ -139,11 +132,12 @@ def ping_pong():
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(target=background_thread)
-    emit('my_response', {'data': 'Connected', 'count': 0})
+    pass
+    # global thread
+    # with thread_lock:
+    #     if thread is None:
+    #         thread = socketio.start_background_task(target=background_thread)
+    # emit('my_response', {'data': 'Connected', 'count': 0})
 
 
 @socketio.on('disconnect', namespace='/test')

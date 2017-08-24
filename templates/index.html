@@ -6,7 +6,10 @@
     <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
-        var distance, x;
+        var distance=0.5*60000;
+        var  x;
+        var timesession=[0.5*60000,0.1*60000,0.5*60000,0.1*60000,0.5*60000,0.1*60000,0.5*60000,0.1*60000];
+        var numbersession=0;
 
         function countdown(millisec) {
             var countDownDate = new Date().getTime() + millisec;
@@ -27,24 +30,29 @@
                 var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
                 // Output the result in an element with id="demo"
-                document.getElementById("CountDownTimer").innerHTML = days + "d " + hours + "h " +
+                document.getElementById("CountDownTimer").innerHTML =  hours + "h " +
                     minutes + "m " + seconds + "s ";
 
                 // If the count down is over, write some text
-                if (distance < 0) {
+                if (distance <= 0) {
+                    numbersession+=1;
+                    numbersession=numbersession%8;
                     clearInterval(x);
+                    countdown(timesession[numbersession]);
                     document.getElementById("CountDownTimer").innerHTML = "EXPIRED";
-                }
+                    }
+
             }, 1000);
         }
 
 
 
+        // countdown(timesession[numbersession]);
         function getCurrentTime() {
             return distance;
         }
 
-        countdown(20 * 60000);
+
         $(document).ready(function() {
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
@@ -74,6 +82,7 @@
             // to the client. The data is then displayed in the "Received"
             // section of the page.
             socket.on('my_response', function(msg) {
+
                 $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
             });
 
@@ -102,24 +111,37 @@
             socket.on('timer_syn', function(msg) {
                 var current = getCurrentTime();
                 console.log('current'+current);
+                  $('#log').append('<br>' + $('<div/>').text('timer_syn').html());
                 socket.emit('gettime', {
                     room: msg.room,
-                    currenttime: current
+                    currenttime: current,
+                    session: numbersession,
+                    pause:pause
                 });
 
+
             });
-            socket.on('stop_or_not',function(msg){
-              if(msg.sign==='stop'){
-                clearInterval(x);
-              }
-              else{
-                countdown(msg.distance);
-              }
-            });
+
             socket.on('start_timer', function(msg) {
+                //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
+                console.log("start time pause"+pause);
                 clearInterval(x);
-                console.log("final" + msg.currenttime);
+                numbersession=msg.session;
+                distance=msg.currenttime;
+
+
+              if(msg.pause){
+                document.getElementById('pausebutton').value = "pause";
                 countdown(msg.currenttime);
+
+
+              }
+                else{
+                  document.getElementById('pausebutton').value = "start";
+                  countdown(msg.currenttime);
+                  clearInterval(x);
+
+                }
 
             });
 
@@ -136,12 +158,6 @@
                 socket.emit('my_broadcast_event', {
                     data: $('#broadcast_data').val()
                 });
-                return false;
-            });
-            $('form#join').submit(function(event) {
-                /*socket.emit('join', {
-                    room: $('#join_room').val()
-                });*/
                 return false;
             });
             $('form#leave').submit(function(event) {
@@ -177,34 +193,54 @@
 
             });
 
-            var twice = false;
-            $('#pausebutton').click(function() {
-                console.log(twice);
-                if (twice) {
-                    document.getElementById('pausebutton').value = "pause";
-                    countdown(distance);
-                    twice=false;
-                    socket.emit('stop_all_timer',{status:0,room:$('#join_room').val(),distance:distance});
-
-                } else {
-                    distance = getCurrentTime();
-                    clearInterval(x);
-                    document.getElementById('pausebutton').value = "resume";
-                    twice = true;
-                    socket.emit('stop_all_timer',{status:1,room:$('#join_room').val()});
-                }
+            $('#takebreak').click(function(){
+              numbersession+=1;
+              clearInterval(x);
+              console.log(numbersession);
+              countdown(timesession[numbersession]);
+              var current = getCurrentTime();
+              socket.emit('room_and_time',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:current})
             });
+
+            var pause = false;
+
+
+            $('#pausebutton').click(function(){
+              if(!pause){
+                console.log("ss");
+                countdown(distance);
+                document.getElementById('pausebutton').value="pause";
+                pause=true;
+
+
+              }
+              else{
+                clearInterval(x);
+                document.getElementById('pausebutton').value="start";
+                pause=false;
+
+              }
+              console.log("final pause"+pause);
+              socket.emit('gettime',{'currenttime':distance,'session':numbersession,'pause':pause,'room':window.location.href.replace("http://127.0.0.1:5000/","")});
+
+
+            }
+            );
+
         });
     </script>
 </head>
 
 <body>
+
+
     <p id="CountDownTimer"></p>
     <h1>Flask-SocketIO Test</h1>
     <p>Async mode is: <b>{{ async_mode }}</b></p>
-    <input type="submit" value="pause" id="pausebutton">
+    <input type="submit" value="start" id="pausebutton">
     <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
     <h2>Send:</h2>
+    <input type="submit" value="take a break" id="takebreak">
     <form id="timer" method="POST">
         <input type="text" id="cow" placeholder="string">
         <input type="submit" value="string">
