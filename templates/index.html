@@ -122,6 +122,7 @@
 
             });
 
+
             socket.on('start_timer', function(msg) {
                 //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
                 console.log("start time pause"+pause);
@@ -129,7 +130,10 @@
                 numbersession=msg.session;
                 distance=msg.currenttime;
 
-
+              if(msg.pause==='break'){
+                countdown(timesession[msg.session]);
+              }
+              else{
               if(msg.pause){
                 document.getElementById('pausebutton').value = "pause";
                 countdown(msg.currenttime);
@@ -142,6 +146,7 @@
                   clearInterval(x);
 
                 }
+              }
 
             });
 
@@ -199,7 +204,7 @@
               console.log(numbersession);
               countdown(timesession[numbersession]);
               var current = getCurrentTime();
-              socket.emit('room_and_time',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:current})
+              socket.emit('gettime',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:current,pause:'break'})
             });
 
             var pause = false;
