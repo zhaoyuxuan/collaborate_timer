@@ -45,7 +45,7 @@
             }, 1000);
         }
 
-
+        console.log("primary session"+numbersession);
 
         // countdown(timesession[numbersession]);
         function getCurrentTime() {
@@ -201,7 +201,7 @@
             $('#takebreak').click(function(){
               numbersession+=1;
               clearInterval(x);
-              console.log(numbersession);
+              console.log("break taking");
               countdown(timesession[numbersession]);
               var current = getCurrentTime();
               socket.emit('gettime',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:current,pause:'break'})
@@ -209,7 +209,12 @@
 
             var pause = false;
 
-
+            $('#reset').click(function(){
+              console.log("reset"+numbersession);
+              clearInterval(x);
+              countdown(timesession[numbersession]);
+              socket.emit('gettime',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:distance,pause:'break'});
+            });
             $('#pausebutton').click(function(){
               if(!pause){
                 console.log("ss");
@@ -245,6 +250,7 @@
     <input type="submit" value="start" id="pausebutton">
     <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
     <h2>Send:</h2>
+    <input type="submit" value="reset" id="reset">
     <input type="submit" value="take a break" id="takebreak">
     <form id="timer" method="POST">
         <input type="text" id="cow" placeholder="string">
