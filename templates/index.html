@@ -211,8 +211,8 @@
 
             $('#reset').click(function(){
               console.log("reset"+numbersession);
-              clearInterval(x);
-              countdown(timesession[numbersession]);
+              // clearInterval(x);
+              // countdown(timesession[numbersession]);
               socket.emit('gettime',{room:window.location.href.replace("http://127.0.0.1:5000/",""),session:numbersession,currenttime:distance,pause:'break'});
             });
             $('#pausebutton').click(function(){

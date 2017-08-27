@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>time ur time</title>
+    <meta charset="utf-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script type="text/javascript" charset="utf-8">
+        var distance = 0.5 * 60000;
+        var x;
+        var timesession = [0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000];
+        var numbersession = 0;
+
+        function countdown(millisec) {
+            var countDownDate = new Date().getTime() + millisec;
+
+            // Update the count down every 1 second
+            x = setInterval(function() {
+
+                // Get todays date and time
+                var now = new Date().getTime();
+
+                // Find the distance between now an the count down date
+                distance = countDownDate - now;
+
+                // Time calculations for days, hours, minutes and seconds
+
+                var minutes = (Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).toString();
+                var seconds = (Math.floor((distance % (1000 * 60)) / 1000)).toString();
+
+                if (seconds.length === 1) {
+                    seconds = '0' + seconds;
+
+                }
+                if (minutes.length === 1) {
+                    minutes = '0' + minutes;
+
+                }
+
+                // Output the result in an element with id="demo"
+                document.getElementById("time").innerHTML = minutes + ":" + seconds;
+
+                // If the count down is over, write some text
+                if (distance <= 0) {
+                    numbersession += 1;
+                    numbersession = numbersession % 8;
+                    clearInterval(x);
+                    countdown(timesession[numbersession]);
+                    document.getElementById("time").innerHTML = "EXPIRED";
+                }
+
+            }, 1000);
+        }
+
+        console.log("primary session" + numbersession);
+
+        // countdown(timesession[numbersession]);
+        function getCurrentTime() {
+            return distance;
+        }
+
+
+        $(document).ready(function() {
+            // Use a "/test" namespace.
+            // An application can open a connection on multiple namespaces, and
+            // Socket.IO will multiplex all those connections on a single
+            // physical channel. If you don't care about multiple channels, you
+            // can set the namespace to an empty string.
+            namespace = '/test';
+
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            // Event handler for new connections.
+            // The callback function is invoked when a connection with the
+            // server is established.
+
+            socket.emit("create_new")
+            socket.on('connect', function() {
+                socket.emit('my_event', {
+                    data: 'I\'m connected!'
+                });
+            });
+            socket.on('my_response', function(msg) {
+
+                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+            });
+
+            // Interval function that tests message latency by sending a "ping"
+            // message. The server then responds with a "pong" message and the
+            // round trip time is measured.
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                socket.emit('my_ping');
+            }, 1000);
+
+            // Handler for the "pong" message. When the pong is received, the
+            // time from the ping is stored, and the average of the last 30
+            // samples is average and displayed.
+            socket.on('my_pong', function() {
+                var latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+                var sum = 0;
+                for (var i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+            socket.on('timer_syn', function(msg) {
+                var current = getCurrentTime();
+                console.log('current' + current);
+                $('#log').append('<br>' + $('<div/>').text('timer_syn').html());
+                socket.emit('gettime', {
+                    room: msg.room,
+                    currenttime: current,
+                    session: numbersession,
+                    pause: pause
+                });
+
+
+            });
+
+
+            socket.on('start_timer', function(msg) {
+                //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
+                console.log("start time pause" + pause);
+                clearInterval(x);
+                numbersession = msg.session;
+                distance = msg.currenttime;
+
+                if (msg.pause === 'break') {
+                    countdown(timesession[msg.session]);
+                } else {
+                    if (msg.pause) {
+
+                        countdown(msg.currenttime);
+
+
+                    } else {
+
+                        countdown(msg.currenttime);
+                        clearInterval(x);
+
+                    }
+                }
+
+            });
+
+            // Handlers for the different forms in the page.
+            // These accept data from the user and send it to the server in a
+            // variety of ways
+            $('form#emit').submit(function(event) {
+                socket.emit('my_event', {
+                    data: $('#emit_data').val()
+                });
+                return false;
+            });
+            $('form#broadcast').submit(function(event) {
+                socket.emit('my_broadcast_event', {
+                    data: $('#broadcast_data').val()
+                });
+                return false;
+            });
+            $('form#leave').submit(function(event) {
+                socket.emit('leave', {
+                    room: $('#leave_room').val()
+                });
+                return false;
+            });
+            $('form#send_room').submit(function(event) {
+                socket.emit('my_room_event', {
+                    room: $('#room_name').val(),
+                    data: $('#room_data').val()
+                });
+                return false;
+            });
+            $('form#close').submit(function(event) {
+                socket.emit('close_room', {
+                    room: $('#close_room').val()
+                });
+                return false;
+            });
+            $('form#disconnect').submit(function(event) {
+                socket.emit('disconnect_request');
+                return false;
+            });
+
+            $('form#join').submit(function() {
+                socket.emit('room_and_time', {
+                    room: $('#join_room').val()
+                });
+
+                return false;
+
+            });
+
+            $('#takebreak').click(function() {
+                numbersession += 1;
+                clearInterval(x);
+                console.log("break taking");
+                countdown(timesession[numbersession]);
+                var current = getCurrentTime();
+                socket.emit('gettime', {
+                    room: window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    session: numbersession,
+                    currenttime: current,
+                    pause: 'break'
+                })
+            });
+
+            var pause = false;
+
+            $('#reset').click(function() {
+                console.log("reset" + numbersession);
+                clearInterval(x);
+                countdown(timesession[numbersession]);
+                socket.emit('gettime', {
+                    room: window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    session: numbersession,
+                    currenttime: distance,
+                    pause: 'break'
+                });
+            });
+            $('#startbutton').click(function() {
+                if (!pause) {
+                    console.log("ss");
+                    countdown(distance);
+                    pause = true;
+
+
+                } else {
+                    clearInterval(x);
+
+                    pause = false;
+
+                }
+                console.log("final pause" + pause);
+                socket.emit('gettime', {
+                    'currenttime': distance,
+                    'session': numbersession,
+                    'pause': pause,
+                    'room': window.location.href.replace("http://127.0.0.1:5000/", "")
+                });
+
+
+            });
+
+        });
+    </script>
+</head>
+
+<body class>
+    <div class="row" id="timer-display">
+        <div class="row no-gutters" id="title">
+            <div class="col-md-auto col-xs-auto">
+                Timetowork
+            </div>
+        </div>
+        <br>
+        <div class="row text-center" id="time">
+            <!-- <div class="col-md-4"></div>
+        <div class="col-md-4 col-xs-1 center-block text-center" id="time"> -->
+            00:00
+            <!-- </div> -->
+            <!-- <div class="col-md-4"></div> -->
+        </div>
+
+        <br>
+        <img class="center-block" id="startbutton" src="{{url_for('static', filename='startbutton.png')}}" style="height:150px; width=150px;" />
+    </div>
+    <div class="row">
+        <div class="col-md-4 text-center" id="bartext">
+            <div class="row">
+                Online
+            </div>
+            <div class="row" style="padding-top:30px;">
+                1
+            </div>
+
+        </div>
+        <div class="col-md-4 text-center" id="bartext">
+            <div class="row" id="takeabreak">
+                Take a break
+            </div>
+            <div class="row" style="padding-top:40px;">
+                Reset
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+</body>
+
+
+
+
+
+<style>
+    /*#takeabreak{
+  padding-top:4vh;
+}*/
+
+    #bartext {
+        /* online: */
+        border-right: 1px solid #979797;
+        font-family: ArialRoundedMTBold;
+        font-size: 60px;
+        padding-top: 5vh;
+        color: rgba(88, 199, 181, 0.73);
+        letter-spacing: -0.41px;
+    }
+
+    #time {
+        /* 00:00: */
+        font-family: Arial-Black;
+        font-size: 180px;
+        color: #FFFFFF;
+        letter-spacing: -3.5px;
+        line-height: 318px;
+        margin-top: 3vh;
+    }
+
+    #title {
+        /* Timetowork: */
+        font-family: HannotateSC-W5;
+        font-size: 4vh;
+        overflow: hidden;
+        color: #45898E;
+        letter-spacing: -0.41px;
+        padding-left: 3vw;
+    }
+
+    #timer-display {
+        padding-bottom: 22vh;
+        background-color: red;
+        /* Rectangle 2: */
+        background: #59C7B5;
+        border: 1px solid #979797;
+    }
+</style>
+
+
+
+</html>

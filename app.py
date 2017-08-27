@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from threading import Lock
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request,redirect,url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 from  storedb import Room
@@ -32,18 +32,26 @@ thread_lock = Lock()
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socketio.async_mode)
+    return render_template('home.html', async_mode=socketio.async_mode)
+
+
+
+@app.route('/redirect_to_room',methods=["POST"])
+def re_direct():
+    message=request.form.to_dict()
+    url=message["url"] +message["room"]
+
+
+    return url
+
+
 
 
 @app.route('/<roomnumber>')
 def rommnum(roomnumber):
-    # socketio.join_room(roomnumber)
-    # socketio.emit('timer_syn',{"room":roomnumber})
-    #socketio.join_room(roomnumber)
-    # print("ahha")
-    #
+
     session['room']=roomnumber
-    return render_template('index.html', async_mode=socketio.async_mode)
+    return render_template('timer.html', async_mode=socketio.async_mode)
 
 
 @socketio.on("create_new",namespace="/test")
@@ -80,7 +88,6 @@ def join(message):
 
 @socketio.on('room_and_time', namespace='/test')
 def assign_time(message):
-    print("room and time")
     emit('timer_syn',{'room':message['room']},room=message['room'])
     join_room(message['room'])
 
