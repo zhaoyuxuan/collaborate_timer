@@ -45,12 +45,12 @@
               <div class='row'>
                   <br>
                   <div class="col-md-6">
-                      Password
+                      Password(optional)
                   </div>
                   <div class='col-md-6'>
                       <div class="row">
                           <div class="col-md-6 col-xs-12" >
-                              <input class="mininput">
+                              <input class="mininput" id="password">
                               </input>
                           </div>
                       </div>
@@ -66,11 +66,14 @@
                     <br>
                     <div class="col-md-6">
                         Study Period
+                        <div class="row text-center" style="font-size:20px;">
+                          (25min default)
+                        </div>
                     </div>
                     <div class='col-md-3'>
                         <div class="row">
                             <div class="col-md-6 col-xs-12" >
-                                <input class="mininput">
+                                <input class="mininput" id="studyperiod">
                                 </input>
                             </div>
                             <div class="col-md-3">
@@ -88,8 +91,14 @@
                 <div class="col-md-3"></div>
 
             </div>
+
             <div class="col-md-2"></div>
-            <div class="row" style="padding-top:420px;">
+            <div class="row">
+              <div class="col-md-4"></div>
+              <div class="text-center col-md-4" id="noroomname" style="color:red; font-size:20px;display:none; padding-top:40px;">Please enter the room name</div>
+              <div class="col-md-4"></div>
+            </div>
+            <div class="row" style="padding-top:180px;">
                 <input class="center-block" id='startbutton' type="submit" value="start">
             </div>
             </input>
@@ -176,11 +185,19 @@
 </style>
 <script>
   $('#startbutton').click(function(){
-    console.log(document.getElementById('roomname').value);
-    var posting=$.post("/redirect_to_room", {room: document.getElementById('roomname').value, url:window.location.href});
+    var roomname=document.getElementById('roomname').value
+    var password=document.getElementById('password').value
+    var studyperiod=document.getElementById('studyperiod').value
+    if(roomname.length==0){
+      document.getElementById("noroomname").style.display="block";
+
+    }
+    else{
+    var posting=$.post("/redirect_to_room", {room: document.getElementById('roomname').value, url:window.location.href,password:password, studyperiod:studyperiod});
     posting.done(function(data){
       window.location.href=data;
     });
+  }
 
 
 
