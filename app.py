@@ -3,7 +3,6 @@ from threading import Lock
 from flask import Flask, render_template, session, request,redirect,url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
-from  storedb import Room
 import random
 
 
