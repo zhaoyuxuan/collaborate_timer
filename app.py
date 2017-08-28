@@ -40,7 +40,7 @@ def index():
     number=str(random.randrange(1000,1000000000000000))
 
 
-    return redirect("/"+number, room=number,code=302)
+    return redirect("/"+number, code=302)
 
 
 
