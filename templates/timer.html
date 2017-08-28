@@ -249,7 +249,7 @@
                 clearInterval(x);
                 countdown(timesession[numbersession]);
                 socket.emit('gettime', {
-                    room: window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    room: {{room}},
                     session: numbersession,
                     currenttime: distance,
                     pause: 'break',
