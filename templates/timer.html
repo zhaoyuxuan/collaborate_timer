@@ -13,6 +13,7 @@
 
     <script type="text/javascript" charset="utf-8">
         var distance = 0.5 * 60000;
+        var online=1;
         var x;
         var timesession = [0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000];
         var numbersession = 0;
@@ -124,12 +125,29 @@
                     room: msg.room,
                     currenttime: current,
                     session: numbersession,
-                    pause: pause
+                    pause: pause,
+                    online:online
                 });
 
 
             });
+            socket.on('disconnection',function(){
+              console.log('connect'+online);
+              online=online-1;
+              document.getElementById("onlinenumber").innerHTML = online;
+              socket.emit('gettime', {
+                  room: msg.room,
+                  currenttime: current,
+                  session: numbersession,
+                  pause: pause,
+                  online:online
+              });
 
+            });
+            socket.on("new_connection",function(){
+              online=online+1;
+              document.getElementById("onlinenumber").innerHTML = online;
+            });
 
             socket.on('start_timer', function(msg) {
                 //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
@@ -137,6 +155,7 @@
                 clearInterval(x);
                 numbersession = msg.session;
                 distance = msg.currenttime;
+                document.getElementById("onlinenumber").innerHTML = msg.online;
 
                 if (msg.pause === 'break') {
                     countdown(timesession[msg.session]);
@@ -214,7 +233,8 @@
                     room: window.location.href.replace("http://127.0.0.1:5000/", ""),
                     session: numbersession,
                     currenttime: current,
-                    pause: 'break'
+                    pause: 'break',
+                    online:online
                 })
             });
 
@@ -228,7 +248,8 @@
                     room: window.location.href.replace("http://127.0.0.1:5000/", ""),
                     session: numbersession,
                     currenttime: distance,
-                    pause: 'break'
+                    pause: 'break',
+                    online:online
                 });
             });
             $('#startbutton').click(function() {
@@ -249,7 +270,8 @@
                     'currenttime': distance,
                     'session': numbersession,
                     'pause': pause,
-                    'room': window.location.href.replace("http://127.0.0.1:5000/", "")
+                    'room': window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    online :online
                 });
 
 
@@ -283,7 +305,7 @@
             <div class="row">
                 Online
             </div>
-            <div class="row" style="padding-top:30px;">
+            <div class="row" style="padding-top:30px;" id="onlinenumber">
                 1
             </div>
 

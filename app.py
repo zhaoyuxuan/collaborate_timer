@@ -30,6 +30,11 @@ thread_lock = Lock()
 #                       namespace='/test')
 
 
+
+
+
+
+
 @app.route('/')
 def index():
     return render_template('home.html', async_mode=socketio.async_mode)
@@ -60,7 +65,7 @@ def new():
         emit('timer_syn',{'room':session['room']},room=session['room'])
 
         join_room(session['room'])
-        session.pop('room',None)
+        # session.pop('room',None)
 
 
 
@@ -94,7 +99,7 @@ def assign_time(message):
 
 @socketio.on('gettime',namespace='/test')
 def joingroup(message):
-    emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"]},room=message['room'])
+    emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"],'online':message["online"]},room=message['room'])
     print(message["pause"])
 
 
@@ -139,7 +144,7 @@ def ping_pong():
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    pass
+    emit('new_connection',{'event':"new coming"},room=session["room"])
     # global thread
     # with thread_lock:
     #     if thread is None:
@@ -149,7 +154,8 @@ def test_connect():
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
-    print('Client disconnected', request.sid)
+    print(session["room"])
+    emit('disconnection', {'event':"disconnect"},room=session["room"])
 
 
 if __name__ == '__main__':

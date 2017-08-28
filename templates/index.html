@@ -72,9 +72,7 @@
 
             socket.emit("create_new")
             socket.on('connect', function() {
-                socket.emit('my_event', {
-                    data: 'I\'m connected!'
-                });
+                
             });
 
             // Event handler for server sent data.
@@ -82,7 +80,6 @@
             // to the client. The data is then displayed in the "Received"
             // section of the page.
             socket.on('my_response', function(msg) {
-
                 $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
             });
 

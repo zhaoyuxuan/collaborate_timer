@@ -9,6 +9,7 @@ class Room(Model):
 
     roomname= UnicodeAttribute(hash_key=True)
     password = UnicodeAttribute()
+    timesession=NumberAttribute()
     online=NumberAttribute()
 
 
