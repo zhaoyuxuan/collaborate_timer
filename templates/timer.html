@@ -233,7 +233,7 @@
                 countdown(timesession[numbersession]);
                 var current = getCurrentTime();
                 socket.emit('gettime', {
-                    room: {{room}},
+                    room: "{{room}}",
                     session: numbersession,
                     currenttime: current,
                     pause: 'break',
@@ -249,7 +249,7 @@
                 clearInterval(x);
                 countdown(timesession[numbersession]);
                 socket.emit('gettime', {
-                    room: {{room}},
+                    room: "{{room}}",
                     session: numbersession,
                     currenttime: distance,
                     pause: 'break',
@@ -275,7 +275,7 @@
                     'currenttime': distance,
                     'session': numbersession,
                     'pause': pause,
-                    'room': {{room}},
+                    'room': "{{room}}",
                     online :online
                 });
 
