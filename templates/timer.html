@@ -233,7 +233,7 @@
                 countdown(timesession[numbersession]);
                 var current = getCurrentTime();
                 socket.emit('gettime', {
-                    room: window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    room: {{room}},
                     session: numbersession,
                     currenttime: current,
                     pause: 'break',
@@ -275,7 +275,7 @@
                     'currenttime': distance,
                     'session': numbersession,
                     'pause': pause,
-                    'room': window.location.href.replace("http://127.0.0.1:5000/", ""),
+                    'room': {{room}},
                     online :online
                 });
 
