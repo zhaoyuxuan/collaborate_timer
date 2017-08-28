@@ -137,7 +137,7 @@
               document.getElementById("onlinenumber").innerHTML = online;
               socket.emit('gettime', {
                   room: msg.room,
-                  currenttime: current,
+                  currenttime: distance,
                   session: numbersession,
                   pause: pause,
                   online:online
