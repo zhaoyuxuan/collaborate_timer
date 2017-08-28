@@ -4,6 +4,7 @@ from flask import Flask, render_template, session, request,redirect,url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 from  storedb import Room
+import random
 
 
 
@@ -37,7 +38,10 @@ thread_lock = Lock()
 
 @app.route('/')
 def index():
-    return render_template('home.html', async_mode=socketio.async_mode)
+    number=str(random.randrange(1000,1000000000000000))
+
+
+    return redirect("/"+number, code=302)
 
 
 
@@ -65,7 +69,7 @@ def new():
         emit('timer_syn',{'room':session['room']},room=session['room'])
 
         join_room(session['room'])
-        # session.pop('room',None)
+
 
 
 

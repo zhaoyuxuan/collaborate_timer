@@ -131,7 +131,7 @@
 
 
             });
-            socket.on('disconnection',function(){
+            socket.on('disconnection',function(msg){
               console.log('connect'+online);
               online=online-1;
               document.getElementById("onlinenumber").innerHTML = online;
@@ -157,15 +157,18 @@
                 distance = msg.currenttime;
                 document.getElementById("onlinenumber").innerHTML = msg.online;
 
+
                 if (msg.pause === 'break') {
                     countdown(timesession[msg.session]);
                 } else {
+                    pause = msg.pause;
                     if (msg.pause) {
-
+                        console.log("pausing");
                         countdown(msg.currenttime);
 
 
                     } else {
+                        console.log("not pausing");
 
                         countdown(msg.currenttime);
                         clearInterval(x);
@@ -242,6 +245,7 @@
 
             $('#reset').click(function() {
                 console.log("reset" + numbersession);
+                console.log("sync the pause");
                 clearInterval(x);
                 countdown(timesession[numbersession]);
                 socket.emit('gettime', {
@@ -255,12 +259,13 @@
             $('#startbutton').click(function() {
                 if (!pause) {
                     console.log("ss");
-                    countdown(distance);
+                    // countdown(distance);
                     pause = true;
 
 
                 } else {
-                    clearInterval(x);
+                    console.log("pause is pressed");
+                    // clearInterval(x);
 
                     pause = false;
 
@@ -319,8 +324,15 @@
             </div>
 
         </div>
+        <div class="col-md-4 text-center" id="bartext">
+            <div class="row">
+                <button id="invite" value="Invite" class="bottom-button" id="takebreak" onclick="copyToClipboard(window.location.href);"> Invite</button>
+            </div>
+
+        </div>
 
     </div>
+    <div id="snackbar">The link is copied to your clipboard</div>
 
 
 
@@ -330,9 +342,69 @@
 
 
 
+<script>
+  function copyToClipboard(element) {
+    console.log(element);
+    var $temp = $("<input>");
+    $("body").append($temp);
+    $temp.val(element).select();
+    document.execCommand("copy");
+    $temp.remove();
+    var x = document.getElementById("snackbar")
+    x.className = "show";
 
+    // After 3 seconds, remove the show class from DIV
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+</script>
 
 <style>
+#snackbar {
+visibility: hidden; /* Hidden by default. Visible on click */
+min-width: 250px; /* Set a default minimum width */
+margin-left: -125px; /* Divide value of min-width by 2 */
+background-color: #333; /* Black background color */
+color: #fff; /* White text color */
+text-align: center; /* Centered text */
+border-radius: 2px; /* Rounded borders */
+padding: 16px; /* Padding */
+position: fixed; /* Sit on top of the screen */
+z-index: 1; /* Add a z-index if needed */
+left: 50%; /* Center the snackbar */
+bottom: 30px; /* 30px from the bottom */
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+visibility: visible; /* Show the snackbar */
+
+/* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+However, delay the fade out process for 2.5 seconds */
+-webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+from {bottom: 0; opacity: 0;}
+to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+from {bottom: 0; opacity: 0;}
+to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+from {bottom: 30px; opacity: 1;}
+to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+from {bottom: 30px; opacity: 1;}
+to {bottom: 0; opacity: 0;}
+}
     /*#takeabreak{
   padding-top:4vh;
 }*/
