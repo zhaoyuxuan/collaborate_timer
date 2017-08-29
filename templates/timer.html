@@ -180,10 +180,11 @@
                         console.log("pausing");
                         document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
                         countdown(msg.currenttime);
+                        $('#bgm').trigger('play');
 
 
                     } else {
-                        console.log("not pausing");
+                        $('#bgm').trigger('pause');
                         document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
                         countdown(msg.currenttime);
                         clearInterval(x);
@@ -304,7 +305,7 @@
             $('#startbutton').click(function() {
                 if (!pause) {
                     console.log("ss");
-                    $('#bgm').trigger('play');
+                    // $('#bgm').trigger('play');
                     document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
                     // countdown(distance);
                     pause = true;
@@ -314,7 +315,7 @@
                     console.log("pause is pressed");
                     document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
                     // clearInterval(x);
-                    $('#bgm').trigger('pause');
+                    // $('#bgm').trigger('pause');
                     pause = false;
 
                 }
@@ -395,7 +396,7 @@
     <div id="snackbar">The link is copied to your clipboard</div>
     <audio loop  id="bgm">
   <!-- <source src="horse.ogg" type="audio/ogg"> -->
-    <source src="../static/Usher-Yeah.mp3" type="audio/mpeg">
+    <source src="../static/42-Rain-10min.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
 </audio>
 
