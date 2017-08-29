@@ -141,7 +141,7 @@
                 online = online - 1;
                 document.getElementById("onlinenumber").innerHTML = online;
                 socket.emit('gettime', {
-                    room: msg.room,
+                    room: window.location.pathname.replace('/', ''),
                     currenttime: distance,
                     session: numbersession,
                     pause: pause,
@@ -152,6 +152,13 @@
             socket.on("new_connection", function() {
                 online = online + 1;
                 document.getElementById("onlinenumber").innerHTML = online;
+                socket.emit('gettime', {
+                    room: msg.room,
+                    currenttime: distance,
+                    session: numbersession,
+                    pause: pause,
+                    online: online
+                });
             });
 
             socket.on('start_timer', function(msg) {
@@ -166,6 +173,7 @@
 
                 if (msg.pause === 'break') {
                     countdown(timesession[msg.session]);
+                    document.getElementById('startbutton').src="{{url_for('static', filename='pause.png')}}";
                 } else {
                     pause = msg.pause;
                     if (msg.pause) {
@@ -250,6 +258,7 @@
                 clearInterval(x);
                 numbersession = numbersession % 8;
                 countdown(timesession[numbersession]);
+                document.getElementById('startbutton').src="{{url_for('static', filename='pause.png')}}";
                 var current = getCurrentTime();
                 socket.emit('gettime', {
                     room: window.location.pathname.replace('/', ''),
@@ -365,7 +374,7 @@
         </div>
         <div class="col-md-4 text-center" id="bartext">
             <div class="row" id="takeabreak">
-                <input type="submit" value="Take a break" class="bottom-button" id="takebreak"> </input>
+                <input type="submit" value="Skip" class="bottom-button" id="takebreak"> </input>
             </div>
             <div class="row" style="padding-top:40px;">
                 <input type="submit" value="Reset" class="bottom-button" id="reset"> </input>
