@@ -149,9 +149,10 @@
                 });
 
             });
-            socket.on("new_connection", function() {
+            socket.on("new_connection", function(msg) {
                 online = online + 1;
                 document.getElementById("onlinenumber").innerHTML = online;
+                console.log("room"+msg.room)
                 socket.emit('gettime', {
                     room: msg.room,
                     currenttime: distance,
@@ -177,7 +178,7 @@
                 } else {
                     pause = msg.pause;
                     if (msg.pause) {
-                        console.log("pausing");
+                        console.log("not pausing");
                         document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
                         countdown(msg.currenttime);
                         $('#bgm').trigger('play');
@@ -185,6 +186,7 @@
 
                     } else {
                         $('#bgm').trigger('pause');
+                        console.log("pausing")
                         document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
                         countdown(msg.currenttime);
                         clearInterval(x);
@@ -437,7 +439,7 @@
       color:white;
       height:6vh;
 
-      font-size: 2.5em;
+      font-size: 2em;
       width:14vh;
     }
     #snackbar {
@@ -539,7 +541,7 @@ However, delay the fade out process for 2.5 seconds */
         /* online: */
         border-right: 1px solid #979797;
         font-family: "Avenir";
-        font-size: 60px;
+        font-size: 3.75em;
         padding-top: 5vh;
         color: rgba(88, 199, 181, 0.73);
         letter-spacing: -0.41px;
@@ -548,7 +550,7 @@ However, delay the fade out process for 2.5 seconds */
     #time {
         /* 00:00: */
         font-family: "Avenir";
-        font-size: 11em;
+        font-size: 16em;
         color: #FFFFFF;
         letter-spacing: -3.5px;
         line-height: 318px;
@@ -566,7 +568,7 @@ However, delay the fade out process for 2.5 seconds */
     }
 
     #timer-display {
-        padding-bottom: 16vh;
+        padding-bottom: 19vh;
         background-color: red;
         /* Rectangle 2: */
         background: #59C7B5;

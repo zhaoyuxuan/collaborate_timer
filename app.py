@@ -147,7 +147,7 @@ def ping_pong():
 
 @socketio.on('connect', namespace='/test')
 def test_connect():
-    print(session["room"])
+    print('room'+session["room"])
     emit('new_connection',{'event':"new coming"},room=session["room"])
     # global thread
     # with thread_lock:
@@ -159,7 +159,7 @@ def test_connect():
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print(session["room"])
-    emit('disconnection', {'event':"disconnect"},room=session["room"])
+    emit('disconnection', {'event':"disconnect","room":session["room"]},room=session["room"])
 
 
 if __name__ == '__main__':
