@@ -170,12 +170,13 @@
                     pause = msg.pause;
                     if (msg.pause) {
                         console.log("pausing");
+                        document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
                         countdown(msg.currenttime);
 
 
                     } else {
                         console.log("not pausing");
-
+                        document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
                         countdown(msg.currenttime);
                         clearInterval(x);
                         var minutes = (Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).toString();
