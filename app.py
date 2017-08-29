@@ -34,9 +34,7 @@ thread_lock = Lock()
 
 
 
-@app.route('/75d58')
-def herokuon():
-  retrun "75d58"
+
 
 @app.route('/')
 def index():
