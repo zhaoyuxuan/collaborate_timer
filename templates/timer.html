@@ -12,11 +12,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script type="text/javascript" charset="utf-8">
-        var distance = 0.5 * 60000;
+        var distance = 25 * 60000;
         var round=0;
         var online = 1;
         var x;
-        var timesession = [0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000];
+        var timesession = [25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 15 * 60000];
         var numbersession = 0;
 
         function countdown(millisec) {
@@ -57,7 +57,7 @@
                     numbersession += 1;
                     numbersession = numbersession % 8;
                     clearInterval(x);
-                    countdown(timesession[numbersession]);
+                    countdown(timesession[numbersession]-1000);
                     document.getElementById("time").innerHTML = "EXPIRED";
                 }
 
@@ -164,10 +164,9 @@
 
             socket.on('start_timer', function(msg) {
                 //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
-                console.log("start time pause" + pause);
                 clearInterval(x);
                 numbersession = msg.session;
-                distance = msg.currenttime-100;
+                distance = msg.currenttime;
                 online = msg.online;
                 document.getElementById("onlinenumber").innerHTML = msg.online;
 
@@ -180,7 +179,7 @@
                     if (msg.pause) {
                         console.log("not pausing");
                         document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
-                        countdown(msg.currenttime);
+                        countdown(msg.currenttime+1000);
                         $('#bgm').trigger('play');
 
 
