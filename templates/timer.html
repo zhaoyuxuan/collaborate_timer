@@ -13,7 +13,8 @@
 
     <script type="text/javascript" charset="utf-8">
         var distance = 0.5 * 60000;
-        var online=1;
+        var round=0;
+        var online = 1;
         var x;
         var timesession = [0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000, 0.5 * 60000, 0.1 * 60000];
         var numbersession = 0;
@@ -49,6 +50,10 @@
 
                 // If the count down is over, write some text
                 if (distance <= 0) {
+                    if(numbersession%2==0){
+                      round+=1;
+                    }
+                    document.getElementById('sessionnumber').innerHTML=round;
                     numbersession += 1;
                     numbersession = numbersession % 8;
                     clearInterval(x);
@@ -126,27 +131,27 @@
                     currenttime: current,
                     session: numbersession,
                     pause: pause,
-                    online:online
+                    online: online
                 });
 
 
             });
-            socket.on('disconnection',function(msg){
-              console.log('connect'+online);
-              online=online-1;
-              document.getElementById("onlinenumber").innerHTML = online;
-              socket.emit('gettime', {
-                  room: msg.room,
-                  currenttime: distance,
-                  session: numbersession,
-                  pause: pause,
-                  online:online
-              });
+            socket.on('disconnection', function(msg) {
+                console.log('connect' + online);
+                online = online - 1;
+                document.getElementById("onlinenumber").innerHTML = online;
+                socket.emit('gettime', {
+                    room: msg.room,
+                    currenttime: distance,
+                    session: numbersession,
+                    pause: pause,
+                    online: online
+                });
 
             });
-            socket.on("new_connection",function(){
-              online=online+1;
-              document.getElementById("onlinenumber").innerHTML = online;
+            socket.on("new_connection", function() {
+                online = online + 1;
+                document.getElementById("onlinenumber").innerHTML = online;
             });
 
             socket.on('start_timer', function(msg) {
@@ -155,7 +160,7 @@
                 clearInterval(x);
                 numbersession = msg.session;
                 distance = msg.currenttime;
-                online=msg.online;
+                online = msg.online;
                 document.getElementById("onlinenumber").innerHTML = msg.online;
 
 
@@ -242,15 +247,15 @@
             $('#takebreak').click(function() {
                 numbersession += 1;
                 clearInterval(x);
-                console.log("break taking");
+                numbersession = numbersession % 8;
                 countdown(timesession[numbersession]);
                 var current = getCurrentTime();
                 socket.emit('gettime', {
-                    room: window.location.pathname.replace('/',''),
+                    room: window.location.pathname.replace('/', ''),
                     session: numbersession,
                     currenttime: current,
                     pause: 'break',
-                    online:online
+                    online: online
                 })
             });
 
@@ -262,24 +267,44 @@
                 clearInterval(x);
                 countdown(timesession[numbersession]);
                 socket.emit('gettime', {
-                    room: window.location.pathname.replace('/',''),
+                    room: window.location.pathname.replace('/', ''),
                     session: numbersession,
                     currenttime: distance,
                     pause: 'break',
-                    online:online
+                    online: online
                 });
+            });
+            var twice=false;
+            $('#mute').click(function(){
+              if(!twice){
+              var audio=document.getElementById('bgm');
+              audio.volume=0;
+              document.getElementById('mute').src="{{url_for('static', filename='mute.svg')}}";
+              twice=true;
+            }
+            else{
+              var audio=document.getElementById('bgm');
+              audio.volume=1;
+              document.getElementById('mute').src="{{url_for('static', filename='high-volume.svg')}}";
+              twice=false;
+
+            }
+
             });
             $('#startbutton').click(function() {
                 if (!pause) {
                     console.log("ss");
+                    $('#bgm').trigger('play');
+                    document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
                     // countdown(distance);
                     pause = true;
 
 
                 } else {
                     console.log("pause is pressed");
+                    document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
                     // clearInterval(x);
-
+                    $('#bgm').trigger('pause');
                     pause = false;
 
                 }
@@ -288,8 +313,8 @@
                     'currenttime': distance,
                     'session': numbersession,
                     'pause': pause,
-                    'room': window.location.pathname.replace('/',''),
-                    online :online
+                    'room': window.location.pathname.replace('/', ''),
+                    online: online
                 });
 
 
@@ -302,8 +327,11 @@
 <body class>
     <div class="row" id="timer-display">
         <div class="row no-gutters" id="title">
-            <div class="col-md-auto col-xs-auto">
+            <div class="col-md-6 col-xs-6">
                 Timetowork
+            </div>
+            <div class="col-md-6 col-xs-6">
+              <img  align="right" id="mute" src="{{url_for('static', filename='high-volume.svg')}}" style="height:50px; width=50px; padding-right:2vw;" />
             </div>
         </div>
         <br>
@@ -317,6 +345,12 @@
 
         <br>
         <img class="center-block" id="startbutton" src="{{url_for('static', filename='startbutton.png')}}" style="height:150px; width=150px;" />
+        <br>
+        <br>
+        <br>
+        <div class="row">
+        <button class="center-block" id="invite" value="Invite" class="bottom-button"  onclick="copyToClipboard(window.location.href);"> Invite</button>
+      </div>
     </div>
     <div class="row">
         <div class="col-md-4 text-center" id="bartext">
@@ -339,13 +373,21 @@
         </div>
         <div class="col-md-4 text-center" id="bartext">
             <div class="row">
-                <button id="invite" value="Invite" class="bottom-button" id="takebreak" onclick="copyToClipboard(window.location.href);"> Invite</button>
+                Session
+            </div>
+            <div class="row" id="sessionnumber" style="padding-top:40px;">
+                0
             </div>
 
         </div>
 
     </div>
     <div id="snackbar">The link is copied to your clipboard</div>
+    <audio loop  id="bgm">
+  <!-- <source src="horse.ogg" type="audio/ogg"> -->
+    <source src="../static/Usher-Yeah.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
 
 
 
@@ -356,81 +398,136 @@
 
 
 <script>
-  function copyToClipboard(element) {
-    console.log(element);
-    var $temp = $("<input>");
-    $("body").append($temp);
-    $temp.val(element).select();
-    document.execCommand("copy");
-    $temp.remove();
-    var x = document.getElementById("snackbar")
-    x.className = "show";
+    function copyToClipboard(element) {
+        console.log(element);
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val(element).select();
+        document.execCommand("copy");
+        $temp.remove();
+        var x = document.getElementById("snackbar")
+        x.className = "show";
 
-    // After 3 seconds, remove the show class from DIV
-    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-}
-
+        // After 3 seconds, remove the show class from DIV
+        setTimeout(function() {
+            x.className = x.className.replace("show", "");
+        }, 3000);
+    }
 </script>
 
 <style>
-#snackbar {
-visibility: hidden; /* Hidden by default. Visible on click */
-min-width: 250px; /* Set a default minimum width */
-margin-left: -125px; /* Divide value of min-width by 2 */
-background-color: #333; /* Black background color */
-color: #fff; /* White text color */
-text-align: center; /* Centered text */
-border-radius: 2px; /* Rounded borders */
-padding: 16px; /* Padding */
-position: fixed; /* Sit on top of the screen */
-z-index: 1; /* Add a z-index if needed */
-left: 50%; /* Center the snackbar */
-bottom: 30px; /* 30px from the bottom */
-}
+    #invite{
+      /* Rectangle 13: */
+      background: #50F9D3;
+      border:none;
+      box-shadow: 0 1 0px 0 rgba(0,0,0,0.69);
+      font-family: "Avenir";
+      outline:none;
+      color:white;
+      height:6vh;
 
-/* Show the snackbar when clicking on a button (class added with JavaScript) */
-#snackbar.show {
-visibility: visible; /* Show the snackbar */
+      font-size: 40px;
+      width:14vh;
+    }
+    #snackbar {
+        visibility: hidden;
+        /* Hidden by default. Visible on click */
+        min-width: 250px;
+        /* Set a default minimum width */
+        margin-left: -125px;
+        /* Divide value of min-width by 2 */
+        background-color: #333;
+        /* Black background color */
+        color: #fff;
+        /* White text color */
+        text-align: center;
+        /* Centered text */
+        border-radius: 2px;
+        /* Rounded borders */
+        padding: 16px;
+        /* Padding */
+        position: fixed;
+        /* Sit on top of the screen */
+        z-index: 1;
+        /* Add a z-index if needed */
+        left: 50%;
+        /* Center the snackbar */
+        bottom: 30px;
+        /* 30px from the bottom */
+    }
+    /* Show the snackbar when clicking on a button (class added with JavaScript) */
 
-/* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+    #snackbar.show {
+        visibility: visible;
+        /* Show the snackbar */
+        /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
 However, delay the fade out process for 2.5 seconds */
--webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-}
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    /* Animations to fade the snackbar in and out */
 
-/* Animations to fade the snackbar in and out */
-@-webkit-keyframes fadein {
-from {bottom: 0; opacity: 0;}
-to {bottom: 30px; opacity: 1;}
-}
+    @-webkit-keyframes fadein {
+        from {
+            bottom: 0;
+            opacity: 0;
+        }
+        to {
+            bottom: 30px;
+            opacity: 1;
+        }
+    }
 
-@keyframes fadein {
-from {bottom: 0; opacity: 0;}
-to {bottom: 30px; opacity: 1;}
-}
+    @keyframes fadein {
+        from {
+            bottom: 0;
+            opacity: 0;
+        }
+        to {
+            bottom: 30px;
+            opacity: 1;
+        }
+    }
 
-@-webkit-keyframes fadeout {
-from {bottom: 30px; opacity: 1;}
-to {bottom: 0; opacity: 0;}
-}
+    @-webkit-keyframes fadeout {
+        from {
+            bottom: 30px;
+            opacity: 1;
+        }
+        to {
+            bottom: 0;
+            opacity: 0;
+        }
+    }
 
-@keyframes fadeout {
-from {bottom: 30px; opacity: 1;}
-to {bottom: 0; opacity: 0;}
-}
+    @keyframes fadeout {
+        from {
+            bottom: 30px;
+            opacity: 1;
+        }
+        to {
+            bottom: 0;
+            opacity: 0;
+        }
+    }
     /*#takeabreak{
   padding-top:4vh;
 }*/
-    .bottom-button{
-      background-color: white;
-      border:none;
-      outline:none;
+
+    body {
+        font-family: 'Avenir';
+    }
+
+    .bottom-button {
+        background-color: white;
+        border: none;
+        outline: none;
     }
 
     #bartext {
         /* online: */
         border-right: 1px solid #979797;
-        font-family: ArialRoundedMTBold;
+        font-family: "Avenir";
         font-size: 60px;
         padding-top: 5vh;
         color: rgba(88, 199, 181, 0.73);
@@ -439,7 +536,7 @@ to {bottom: 0; opacity: 0;}
 
     #time {
         /* 00:00: */
-        font-family: Arial-Black;
+        font-family: "Avenir";
         font-size: 180px;
         color: #FFFFFF;
         letter-spacing: -3.5px;
@@ -449,7 +546,7 @@ to {bottom: 0; opacity: 0;}
 
     #title {
         /* Timetowork: */
-        font-family: HannotateSC-W5;
+        font-family: "Avenir";
         font-size: 4vh;
         overflow: hidden;
         color: #45898E;
@@ -458,7 +555,7 @@ to {bottom: 0; opacity: 0;}
     }
 
     #timer-display {
-        padding-bottom: 22vh;
+        padding-bottom: 16vh;
         background-color: red;
         /* Rectangle 2: */
         background: #59C7B5;
