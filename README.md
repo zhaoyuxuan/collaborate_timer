@@ -7,6 +7,7 @@
   4. Invite other by link
   5. Room Link is automatically copied to your clipboard
   6. Pausing and starting is synchronized between all users
+  7. Notification when user connects and disconnects
  
 
   
