@@ -11,10 +11,11 @@
 ## Screenshot
   Main page
   ![Alt text](/screenshot/Screen%20Shot%202017-08-30%20at%204.38.41%20PM.png?raw=true "Optional Title")
+  
   Synchronization between users(notification on the top right corner)
   ![Alt text](/screenshot/Screen%20Shot%202017-08-30%20at%204.39.39%20PM.png?raw=true "Optional Title")
 ## Video Demo
-    YouTube: [link](https://www.youtube.com/watch?v=21QkPSIFhec)
+    YouTube: [link] https://www.youtube.com/watch?v=21QkPSIFhec
   
 
   
