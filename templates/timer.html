@@ -13,7 +13,7 @@
 
     <script type="text/javascript" charset="utf-8">
         var distance = 25 * 60000;
-        var round=0;
+        var round = 0;
         var online = 1;
         var x;
         var timesession = [25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 15 * 60000];
@@ -50,18 +50,31 @@
 
                 // If the count down is over, write some text
                 if (distance <= 0) {
-                    if(numbersession%2==0){
-                      round+=1;
+                    if (numbersession % 2 == 0) {
+                        round += 1;
                     }
-                    document.getElementById('sessionnumber').innerHTML=round;
+                    document.getElementById('sessionnumber').innerHTML = round;
                     numbersession += 1;
                     numbersession = numbersession % 8;
                     clearInterval(x);
-                    countdown(timesession[numbersession]-1000);
+                    countdown(timesession[numbersession] - 1000);
                     document.getElementById("time").innerHTML = "EXPIRED";
                 }
 
             }, 1000);
+        }
+
+        function notifyMe(title,body) {
+            if (Notification.permission !== "granted")
+                Notification.requestPermission();
+            else {
+                var notification = new Notification(title, {
+                    icon: "{{url_for('static', filename='icon.png')}}",
+                    body: body,
+                });
+
+            }
+
         }
 
         console.log("primary session" + numbersession);
@@ -84,6 +97,11 @@
             // The connection URL has the following format:
             //     http[s]://<domain>:<port>[/<namespace>]
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (Notification.permission !== "granted")
+                    Notification.requestPermission();
+            });
 
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
@@ -139,6 +157,7 @@
             socket.on('disconnection', function(msg) {
                 console.log('connect' + online);
                 online = online - 1;
+                notifyMe("disconnect","user left the room");
                 document.getElementById("onlinenumber").innerHTML = online;
                 socket.emit('gettime', {
                     room: window.location.pathname.replace('/', ''),
@@ -151,8 +170,9 @@
             });
             socket.on("new_connection", function(msg) {
                 online = online + 1;
+                notifyMe("connect","new user join in the room");
                 document.getElementById("onlinenumber").innerHTML = online;
-                console.log("room"+msg.room)
+                console.log("room" + msg.room)
                 socket.emit('gettime', {
                     room: msg.room,
                     currenttime: distance,
@@ -173,20 +193,20 @@
 
                 if (msg.pause === 'break') {
                     countdown(timesession[msg.session]);
-                    document.getElementById('startbutton').src="{{url_for('static', filename='pause.png')}}";
+                    document.getElementById('startbutton').src = "{{url_for('static', filename='pause.png')}}";
                 } else {
                     pause = msg.pause;
                     if (msg.pause) {
                         console.log("not pausing");
-                        document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
-                        countdown(msg.currenttime+1000);
+                        document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
+                        countdown(msg.currenttime + 1000);
                         $('#bgm').trigger('play');
 
 
                     } else {
                         $('#bgm').trigger('pause');
                         console.log("pausing")
-                        document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
+                        document.getElementById("startbutton").src = "{{url_for('static', filename='startbutton.png')}}"
                         countdown(msg.currenttime);
                         clearInterval(x);
                         var minutes = (Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).toString();
@@ -260,7 +280,7 @@
                 clearInterval(x);
                 numbersession = numbersession % 8;
                 countdown(timesession[numbersession]);
-                document.getElementById('startbutton').src="{{url_for('static', filename='pause.png')}}";
+                document.getElementById('startbutton').src = "{{url_for('static', filename='pause.png')}}";
                 var current = getCurrentTime();
                 socket.emit('gettime', {
                     room: window.location.pathname.replace('/', ''),
@@ -286,35 +306,34 @@
                     online: online
                 });
             });
-            var twice=false;
-            $('#mute').click(function(){
-              if(!twice){
-              var audio=document.getElementById('bgm');
-              audio.volume=0;
-              document.getElementById('mute').src="{{url_for('static', filename='mute.svg')}}";
-              twice=true;
-            }
-            else{
-              var audio=document.getElementById('bgm');
-              audio.volume=1;
-              document.getElementById('mute').src="{{url_for('static', filename='high-volume.svg')}}";
-              twice=false;
+            var twice = false;
+            $('#mute').click(function() {
+                if (!twice) {
+                    var audio = document.getElementById('bgm');
+                    audio.volume = 0;
+                    document.getElementById('mute').src = "{{url_for('static', filename='mute.svg')}}";
+                    twice = true;
+                } else {
+                    var audio = document.getElementById('bgm');
+                    audio.volume = 1;
+                    document.getElementById('mute').src = "{{url_for('static', filename='high-volume.svg')}}";
+                    twice = false;
 
-            }
+                }
 
             });
             $('#startbutton').click(function() {
                 if (!pause) {
                     console.log("ss");
                     // $('#bgm').trigger('play');
-                    document.getElementById("startbutton").src="{{url_for('static', filename='pause.png')}}"
+                    document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
                     // countdown(distance);
                     pause = true;
 
 
                 } else {
                     console.log("pause is pressed");
-                    document.getElementById("startbutton").src="{{url_for('static', filename='startbutton.png')}}"
+                    document.getElementById("startbutton").src = "{{url_for('static', filename='startbutton.png')}}"
                     // clearInterval(x);
                     // $('#bgm').trigger('pause');
                     pause = false;
@@ -343,7 +362,7 @@
                 Timetowork
             </div>
             <div class="col-md-6 col-xs-6">
-              <img  align="right" id="mute" src="{{url_for('static', filename='high-volume.svg')}}" style="height:50px; width=50px; padding-right:2vw;" />
+                <img align="right" id="mute" src="{{url_for('static', filename='high-volume.svg')}}" style="height:50px; width=50px; padding-right:2vw;" />
             </div>
         </div>
         <br>
@@ -361,8 +380,8 @@
         <br>
         <br>
         <div class="row">
-        <button class="center-block text-center" id="invite" value="Invite" class="bottom-button"  onclick="copyToClipboard(window.location.href);"> Invite</button>
-      </div>
+            <button class="center-block text-center" id="invite" value="Invite" class="bottom-button" onclick="copyToClipboard(window.location.href);"> Invite</button>
+        </div>
     </div>
     <div class="row">
         <div class="col-md-4 text-center" id="bartext">
@@ -395,7 +414,7 @@
 
     </div>
     <div id="snackbar">The link is copied to your clipboard</div>
-    <audio loop  id="bgm">
+    <audio loop id="bgm">
   <!-- <source src="horse.ogg" type="audio/ogg"> -->
     <source src="../static/42-Rain-10min.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
@@ -428,24 +447,24 @@
 </script>
 
 <style>
-  @font-face {
-    font-family: "Avenir";
-    src: url("../static/Avenir.ttc");
-  }
-
-    #invite{
-      /* Rectangle 13: */
-      background: #50F9D3;
-      border:none;
-      box-shadow: 0 1 0px 0 rgba(0,0,0,0.69);
-      font-family: "Avenir";
-      outline:none;
-      color:white;
-      height:6vh;
-
-      font-size: 3vh;
-      width:14vh;
+    @font-face {
+        font-family: "Avenir";
+        src: url("../static/Avenir.ttc");
     }
+
+    #invite {
+        /* Rectangle 13: */
+        background: #50F9D3;
+        border: none;
+        box-shadow: 0 1 0px 0 rgba(0, 0, 0, 0.69);
+        font-family: "Avenir";
+        outline: none;
+        color: white;
+        height: 6vh;
+        font-size: 3vh;
+        width: 14vh;
+    }
+
     #snackbar {
         visibility: hidden;
         /* Hidden by default. Visible on click */

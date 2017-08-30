@@ -149,7 +149,7 @@ def ping_pong():
 @socketio.on('connect', namespace='/test')
 def test_connect():
     print('room'+session["room"])
-    emit('new_connection',{'event':"new coming"},room=session["room"])
+    emit('new_connection',{'event':"new coming", "room":session["room"]},room=session["room"])
     # global thread
     # with thread_lock:
     #     if thread is None:
