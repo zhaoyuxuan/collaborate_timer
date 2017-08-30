@@ -9,6 +9,12 @@
   6. Pausing and starting is synchronized between all users
   7. Notification when user connects and disconnects
 ## Screenshot
+  Main page
+  ![Alt text](/screenshot/Screen%20Shot%202017-08-30%20at%204.38.41%20PM.png?raw=true "Optional Title")
+  Synchronization between users(notification on the top right corner)
+  /screenshot/Screen%20Shot%202017-08-30%20at%204.39.39%20PM.png
+## Video Demo
+    YouTube: [title](https://www.youtube.com/watch?v=21QkPSIFhec)
   
 
   
