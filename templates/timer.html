@@ -12,12 +12,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script type="text/javascript" charset="utf-8">
-        var distance = 25 * 60000;
-        var round = 0;
-        var online = 1;
+        var distance = 25 * 60000; //intial timer
+        var round = 0; //the number of study session user had
+        var online = 1;//the number of people who is online
         var x;
-        var timesession = [25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 15 * 60000];
-        var numbersession = 0;
+        var timesession = [25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 5 * 60000, 25 * 60000, 15 * 60000]; //timer's value
+        var numbersession = 0; //which timesession is it right now
 
         function countdown(millisec) {
             var countDownDate = new Date().getTime() + millisec;
@@ -63,12 +63,12 @@
 
             }, 1000);
         }
-
+        //notification when a user joins or disconnects
         function notifyMe(title,body) {
             if (Notification.permission !== "granted")
-                Notification.requestPermission();
+                Notification.requestPermission(); //request the notification permission
             else {
-                var notification = new Notification(title, {
+                var notification = new Notification(title, {   //load the logo
                     icon: "{{url_for('static', filename='icon.png')}}",
                     body: body,
                 });
@@ -77,9 +77,7 @@
 
         }
 
-        console.log("primary session" + numbersession);
 
-        // countdown(timesession[numbersession]);
         function getCurrentTime() {
             return distance;
         }
@@ -113,10 +111,6 @@
                     data: 'I\'m connected!'
                 });
             });
-            socket.on('my_response', function(msg) {
-
-                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-            });
 
             // Interval function that tests message latency by sending a "ping"
             // message. The server then responds with a "pong" message and the
@@ -131,19 +125,9 @@
             // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
             // samples is average and displayed.
-            socket.on('my_pong', function() {
-                var latency = (new Date).getTime() - start_time;
-                ping_pong_times.push(latency);
-                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
-                var sum = 0;
-                for (var i = 0; i < ping_pong_times.length; i++)
-                    sum += ping_pong_times[i];
-                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
-            });
+            //synchronize the timer
             socket.on('timer_syn', function(msg) {
                 var current = getCurrentTime();
-                console.log('current' + current);
-                $('#log').append('<br>' + $('<div/>').text('timer_syn').html());
                 socket.emit('gettime', {
                     room: msg.room,
                     currenttime: current,
@@ -154,8 +138,8 @@
 
 
             });
+            //when there is user disconnect, change the online number
             socket.on('disconnection', function(msg) {
-                console.log('connect' + online);
                 online = online - 1;
                 notifyMe("disconnect","user left the room");
                 document.getElementById("onlinenumber").innerHTML = online;
@@ -168,11 +152,11 @@
                 });
 
             });
+            //when there is a new connection
             socket.on("new_connection", function(msg) {
                 online = online + 1;
                 notifyMe("connect","new user join in the room");
                 document.getElementById("onlinenumber").innerHTML = online;
-                console.log("room" + msg.room)
                 socket.emit('gettime', {
                     room: msg.room,
                     currenttime: distance,
@@ -181,31 +165,29 @@
                     online: online
                 });
             });
-
+            //synchronize all the element and start the timer
             socket.on('start_timer', function(msg) {
-                //$('#log').append('<br>' + $('<div/>').text('start_timer').html());
                 clearInterval(x);
                 numbersession = msg.session;
                 distance = msg.currenttime;
                 online = msg.online;
                 document.getElementById("onlinenumber").innerHTML = msg.online;
 
-
+                //detect if the timer is on break
                 if (msg.pause === 'break') {
                     countdown(timesession[msg.session]);
                     document.getElementById('startbutton').src = "{{url_for('static', filename='pause.png')}}";
                 } else {
+                    //check if the timer is pausing
                     pause = msg.pause;
                     if (msg.pause) {
-                        console.log("not pausing");
                         document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
                         countdown(msg.currenttime + 1000);
                         $('#bgm').trigger('play');
 
-
+                    //check if the background music should be on
                     } else {
                         $('#bgm').trigger('pause');
-                        console.log("pausing")
                         document.getElementById("startbutton").src = "{{url_for('static', filename='startbutton.png')}}"
                         countdown(msg.currenttime);
                         clearInterval(x);
@@ -294,8 +276,6 @@
             var pause = false;
 
             $('#reset').click(function() {
-                console.log("reset" + numbersession);
-                console.log("sync the pause");
                 clearInterval(x);
                 countdown(timesession[numbersession]);
                 socket.emit('gettime', {
@@ -324,7 +304,6 @@
             });
             $('#startbutton').click(function() {
                 if (!pause) {
-                    console.log("ss");
                     // $('#bgm').trigger('play');
                     document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
                     // countdown(distance);
@@ -332,14 +311,12 @@
 
 
                 } else {
-                    console.log("pause is pressed");
                     document.getElementById("startbutton").src = "{{url_for('static', filename='startbutton.png')}}"
                     // clearInterval(x);
                     // $('#bgm').trigger('pause');
                     pause = false;
 
                 }
-                console.log("final pause" + pause);
                 socket.emit('gettime', {
                     'currenttime': distance,
                     'session': numbersession,
@@ -430,7 +407,6 @@
 
 <script>
     function copyToClipboard(element) {
-        console.log(element);
         var $temp = $("<input>");
         $("body").append($temp);
         $temp.val(element).select();
