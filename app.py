@@ -18,8 +18,6 @@ thread = None
 thread_lock = Lock()
 app.config['SECRET_KEY']=os.environ['SECRET_KEY']
 
-
-
 @app.route('/')
 def index():
     #random generate a room number for each study room
@@ -27,35 +25,33 @@ def index():
     return redirect("/"+number, code=302)
 
 
-#direct user to repective room based on the roomnumebr
 @app.route('/<roomnumber>')
 def rommnum(roomnumber):
+    #direct user to repective room based on the roomnumebr
     session['room'] = roomnumber
     return render_template('timer.html', async_mode=socketio.async_mode)
 
-#put the newly joint user into the respective room
 @socketio.on("create_new",namespace = "/sync")
 def new():
+    #put the newly joint user into the respective room
     if 'room' in session:
         emit('timer_syn',{'room':session['room']},room = session['room'])
         join_room(session['room'])
 
-#get the time from one user and synchronize that
 @socketio.on('synchronize',namespace = '/sync')
 def sychronize(message):
+    #get the time from one user and synchronize that
     emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"],'online':message["online"]},room = message['room'])
-    print(message["pause"])
 
-#when new user connect, sent a message to the javascript
 @socketio.on('connect', namespace = '/sync')
 def connect():
-    print('room'+session["room"])
+    #when new user connect, sent a message to the javascript
     emit('new_connection',{'event':"new coming", "room":session["room"]},room = session["room"])
 
-#called when user disconnect from the room
+
 @socketio.on('disconnect', namespace = '/sync')
 def disconnect():
-    print(session["room"])
+    #called when user disconnect from the room
     emit('disconnection', {'event':"disconnect","room":session["room"]},room = session["room"])
 
 
