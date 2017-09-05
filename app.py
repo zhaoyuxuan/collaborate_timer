@@ -41,11 +41,11 @@ def new():
         emit('timer_syn',{'room':session['room']},room = session['room'])
         join_room(session['room'])
 
-#synchronize the roomnumber and the timer between users
-@socketio.on('room_and_time', namespace = '/test')
-def assign_time(message):
-    emit('timer_syn',{'room':message['room']},room = message['room'])
-    join_room(message['room'])
+# #synchronize the roomnumber and the timer between users
+# @socketio.on('room_and_time', namespace = '/test')
+# def assign_time(message):
+#     emit('timer_syn',{'room':message['room']},room = message['room'])
+#     join_room(message['room'])
 
 #get the time from one user and synchronize that
 @socketio.on('gettime',namespace = '/test')
