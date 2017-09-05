@@ -45,7 +45,7 @@ def new():
 
 @socketio.on('room_and_time', namespace = '/test')
 #synchronize the roomnumber and the timer between users
-def room_and_time(message):
+def assign_time(message):
     emit('timer_syn',{'room':message['room']},room = message['room'])
     join_room(message['room'])
 
