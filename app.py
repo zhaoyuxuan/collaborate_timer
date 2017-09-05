@@ -3,7 +3,7 @@ from threading import Lock
 from flask import Flask, render_template, session, request,redirect,url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
-import random
+import random,os
 
 
 
@@ -16,6 +16,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, async_mode = async_mode)
 thread = None
 thread_lock = Lock()
+app.config['SECRET_KEY']=os.environ['SECRET_KEY']
 
 
 #random generate a room number for each study room
@@ -27,24 +28,21 @@ def index():
     return redirect("/"+number, code=302)
 
 
-
+#direct user to repective room based on the roomnumebr
 @app.route('/<roomnumber>')
 def rommnum(roomnumber):
     session['room'] = roomnumber
-    #direct user to repective room based on the roomnumebr
     return render_template('timer.html', async_mode=socketio.async_mode)
 
-
+#put the newly joint user into the respective room
 @socketio.on("create_new",namespace = "/test")
 def new():
     if 'room' in session:
-        #put the newly joint user into the respective room
         emit('timer_syn',{'room':session['room']},room = session['room'])
         join_room(session['room'])
 
-
-@socketio.on('room_and_time', namespace = '/test')
 #synchronize the roomnumber and the timer between users
+@socketio.on('room_and_time', namespace = '/test')
 def assign_time(message):
     emit('timer_syn',{'room':message['room']},room = message['room'])
     join_room(message['room'])
