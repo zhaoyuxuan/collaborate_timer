@@ -41,27 +41,21 @@ def new():
         emit('timer_syn',{'room':session['room']},room = session['room'])
         join_room(session['room'])
 
-# #synchronize the roomnumber and the timer between users
-# @socketio.on('room_and_time', namespace = '/test')
-# def assign_time(message):
-#     emit('timer_syn',{'room':message['room']},room = message['room'])
-#     join_room(message['room'])
-
 #get the time from one user and synchronize that
-@socketio.on('gettime',namespace = '/test')
-def joingroup(message):
+@socketio.on('synchronize',namespace = '/test')
+def sychronize(message):
     emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"],'online':message["online"]},room = message['room'])
     print(message["pause"])
 
 #when new user connect, sent a message to the javascript
 @socketio.on('connect', namespace = '/test')
-def test_connect():
+def connect():
     print('room'+session["room"])
     emit('new_connection',{'event':"new coming", "room":session["room"]},room = session["room"])
 
 #called when user disconnect from the room
 @socketio.on('disconnect', namespace = '/test')
-def test_disconnect():
+def disconnect():
     print(session["room"])
     emit('disconnection', {'event':"disconnect","room":session["room"]},room = session["room"])
 

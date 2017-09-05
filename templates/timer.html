@@ -209,16 +209,17 @@
 
             });
 
-            // Handlers for the different forms in the page.
-            // These accept data from the user and send it to the server in a
-            // variety of ways
             $('#takebreak').click(function() {
-                numbersession += 1;
-                clearInterval(x);
-                numbersession = numbersession % 8;
-                countdown(timesession[numbersession]);
+                //activate when user wants to take a break
+                numbersession += 1; //goes to the next time session
+                clearInterval(x);//stop the current timer
+                numbersession = numbersession % 8;//get the correct index
+                countdown(timesession[numbersession]);//restart the timer
+                //change the button image from start to stop
                 document.getElementById('startbutton').src = "{{url_for('static', filename='pause.png')}}";
+                //get the current time
                 var current = getCurrentTime();
+                //synchronize the time by sending all the information to the server
                 socket.emit('gettime', {
                     room: window.location.pathname.replace('/', ''),
                     session: numbersession,
@@ -228,12 +229,13 @@
                 })
             });
 
-            var pause = false;
+            var pause = false; //intially timer starts
 
             $('#reset').click(function() {
-                clearInterval(x);
-                countdown(timesession[numbersession]);
-                socket.emit('gettime', {
+                //when user wants to reset the timer to 25min in study session or 5min in break
+                clearInterval(x); //stop the timer
+                countdown(timesession[numbersession]); //start a new timer with 25min/5min(study/break)
+                socket.emit('gettime', {// synchronize between all the users
                     room: window.location.pathname.replace('/', ''),
                     session: numbersession,
                     currenttime: distance,
@@ -241,17 +243,19 @@
                     online: online
                 });
             });
-            var twice = false;
+            var twice = false; //check if the mute is clicked twice, twice means it is mute again
             $('#mute').click(function() {
+                var audio = document.getElementById('bgm'); //load the bgm
                 if (!twice) {
-                    var audio = document.getElementById('bgm');
-                    audio.volume = 0;
+                    audio.volume = 0;//set the volume to 0 to unmute
+                    //change the sign to unmute
                     document.getElementById('mute').src = "{{url_for('static', filename='mute.svg')}}";
-                    twice = true;
+                    twice = true; //update the counter
                 } else {
-                    var audio = document.getElementById('bgm');
-                    audio.volume = 1;
+                    audio.volume = 1;//set the volume to 1 to mute
+                    //change the sign to mute
                     document.getElementById('mute').src = "{{url_for('static', filename='high-volume.svg')}}";
+                    //update the counter
                     twice = false;
 
                 }
@@ -259,19 +263,20 @@
             });
             $('#startbutton').click(function() {
                 if (!pause) {
-                    // $('#bgm').trigger('play');
                     document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
-                    // countdown(distance);
+                    // change the button's image from start to pause sign
                     pause = true;
+                    //update the counter
 
 
                 } else {
+                    //update the button image
                     document.getElementById("startbutton").src = "{{url_for('static', filename='startbutton.png')}}"
-                    // clearInterval(x);
-                    // $('#bgm').trigger('pause');
+                    //update the counter
                     pause = false;
 
                 }
+                //sychronize between users
                 socket.emit('gettime', {
                     'currenttime': distance,
                     'session': numbersession,
