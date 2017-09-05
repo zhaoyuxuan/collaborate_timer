@@ -19,9 +19,10 @@ thread_lock = Lock()
 app.config['SECRET_KEY']=os.environ['SECRET_KEY']
 
 
-#random generate a room number for each study room
+
 @app.route('/')
 def index():
+    #random generate a room number for each study room
     maximum = 1000000000000000
     minimum = 100000
     number = str(random.randrange(minimum,maximum))

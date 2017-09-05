@@ -89,7 +89,7 @@
             // Socket.IO will multiplex all those connections on a single
             // physical channel. If you don't care about multiple channels, you
             // can set the namespace to an empty string.
-            namespace = '/test';
+            namespace = '/sync';
 
             // Connect to the Socket.IO server.
             // The connection URL has the following format:
@@ -128,7 +128,7 @@
             //synchronize the timer
             socket.on('timer_syn', function(msg) {
                 var current = getCurrentTime();
-                socket.emit('gettime', {
+                socket.emit('synchronize', {
                     room: msg.room,
                     currenttime: current,
                     session: numbersession,
@@ -143,7 +143,7 @@
                 online = online - 1;
                 notifyMe("disconnect","user left the room");
                 document.getElementById("onlinenumber").innerHTML = online;
-                socket.emit('gettime', {
+                socket.emit('synchronize', {
                     room: window.location.pathname.replace('/', ''),
                     currenttime: distance,
                     session: numbersession,
@@ -157,7 +157,7 @@
                 online = online + 1;
                 notifyMe("connect","new user join in the room");
                 document.getElementById("onlinenumber").innerHTML = online;
-                socket.emit('gettime', {
+                socket.emit('synchronize', {
                     room: msg.room,
                     currenttime: distance,
                     session: numbersession,
@@ -220,7 +220,7 @@
                 //get the current time
                 var current = getCurrentTime();
                 //synchronize the time by sending all the information to the server
-                socket.emit('gettime', {
+                socket.emit('synchronize', {
                     room: window.location.pathname.replace('/', ''),
                     session: numbersession,
                     currenttime: current,
@@ -235,7 +235,7 @@
                 //when user wants to reset the timer to 25min in study session or 5min in break
                 clearInterval(x); //stop the timer
                 countdown(timesession[numbersession]); //start a new timer with 25min/5min(study/break)
-                socket.emit('gettime', {// synchronize between all the users
+                socket.emit('synchronize', {// synchronize between all the users
                     room: window.location.pathname.replace('/', ''),
                     session: numbersession,
                     currenttime: distance,
@@ -263,6 +263,7 @@
             });
             $('#startbutton').click(function() {
                 if (!pause) {
+
                     document.getElementById("startbutton").src = "{{url_for('static', filename='pause.png')}}"
                     // change the button's image from start to pause sign
                     pause = true;
@@ -277,7 +278,7 @@
 
                 }
                 //sychronize between users
-                socket.emit('gettime', {
+                socket.emit('synchronize', {
                     'currenttime': distance,
                     'session': numbersession,
                     'pause': pause,
