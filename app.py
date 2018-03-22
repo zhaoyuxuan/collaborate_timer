@@ -24,7 +24,7 @@ def rommnum(roomNumber):
     session['room'] = roomNumber
     return render_template('timer.html', async_mode=socketio.async_mode)
 
-@socketio.on("create_new", namespace = "/sync")
+@socketio.on("create_new", namespace="/sync")
 def new():
     #put the newly joint user into the respective room
     if 'room' in session:
