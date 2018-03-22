@@ -5,25 +5,21 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 import random,os
 
-
-
-
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
 async_mode = None
 app = Flask(__name__)
-socketio = SocketIO(app, async_mode = async_mode)
+socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
-app.config['SECRET_KEY']=os.environ['SECRET_KEY']
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
 @app.route('/')
 def index():
     #random generate a room number for each study room
     number = str(random.randrange(100000,1000000000000000))
     return redirect("/"+number, code=302)
-
 
 @app.route('/<roomnumber>')
 def rommnum(roomnumber):
@@ -35,24 +31,23 @@ def rommnum(roomnumber):
 def new():
     #put the newly joint user into the respective room
     if 'room' in session:
-        emit('timer_syn',{'room':session['room']},room = session['room'])
+        emit('timer_syn',{'room':session['room']},room=session['room'])
         join_room(session['room'])
 
-@socketio.on('synchronize',namespace = '/sync')
+@socketio.on('synchronize',namespace='/sync')
 def sychronize(message):
     #get the time from one user and synchronize that
-    emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"],'online':message["online"]},room = message['room'])
+    emit('start_timer',{'currenttime':message['currenttime'],'session':message['session'],'pause':message["pause"],'online':message["online"]},room=message['room'])
 
-@socketio.on('connect', namespace = '/sync')
+@socketio.on('connect', namespace='/sync')
 def connect():
     #when new user connect, sent a message to the javascript
-    emit('new_connection',{'event':"new coming", "room":session["room"]},room = session["room"])
+    emit('new_connection',{'event':"new coming", "room":session["room"]},room=session["room"])
 
-
-@socketio.on('disconnect', namespace = '/sync')
+@socketio.on('disconnect', namespace='/sync')
 def disconnect():
     #called when user disconnect from the room
-    emit('disconnection', {'event':"disconnect","room":session["room"]},room = session["room"])
+    emit('disconnection', {'event':"disconnect","room":session["room"]},room=session["room"])
 
 
 if __name__ == '__main__':
